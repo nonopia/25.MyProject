@@ -5,7 +5,6 @@ from cryptography.fernet import Fernet
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTextEdit, QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QInputDialog, QListWidget, QListWidgetItem, QFileDialog, QLabel, QStyledItemDelegate, QProgressBar, QCheckBox, QMessageBox, QGroupBox, QRadioButton, QListWidget, QButtonGroup, QDialog  #pip install pyQT6
 from PyQt6.QtCore import QThread, pyqtSignal, Qt, QEvent, QRegularExpression
 from PyQt6.QtGui import QColor, QPen, QRegularExpressionValidator, QIntValidator
-from PyQt6.QtGui import QColor
 
 from datetime import datetime, date, timedelta
 from pathlib import Path
@@ -16,7 +15,6 @@ import os
 import sys
 import random
 import json
-import glob
 import inspect
 import re
 
@@ -63,107 +61,6 @@ class ConfigKeys:
     TARG_DA = "targ_da"
     TARG_VA = "targ_va"
     ENPREV = "enprev"
-
-class FileSelectionDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Access Info 파일 선택")
-        self.setFixedSize(500, 400)
-        self.selected_file = None
-        
-        # 레이아웃 설정
-        layout = QVBoxLayout()
-        
-        # 제목 라벨
-        title_label = QLabel("사용할 Access Info 파일을 선택하세요:")
-        title_label.setStyleSheet("font-size: 14px; font-weight: bold; margin-bottom: 10px;")
-        layout.addWidget(title_label)
-        
-        # 파일 리스트 위젯
-        self.file_list = QListWidget()
-        self.file_list.setStyleSheet("font-size: 12px;")
-        self.file_list.itemDoubleClicked.connect(self.on_file_double_clicked)
-        layout.addWidget(self.file_list)
-        
-        # 버튼 레이아웃
-        button_layout = QHBoxLayout()
-        
-        # 새로고침 버튼
-        self.refresh_button = QPushButton("새로고침")
-        self.refresh_button.clicked.connect(self.refresh_file_list)
-        button_layout.addWidget(self.refresh_button)
-        
-        button_layout.addStretch()  # 간격 추가
-        
-        # 확인/취소 버튼
-        self.ok_button = QPushButton("확인")
-        self.ok_button.clicked.connect(self.accept_selection)
-        self.ok_button.setEnabled(False)  # 처음에는 비활성화
-        button_layout.addWidget(self.ok_button)
-        
-        self.cancel_button = QPushButton("취소")
-        self.cancel_button.clicked.connect(self.reject)
-        button_layout.addWidget(self.cancel_button)
-        
-        layout.addLayout(button_layout)
-        self.setLayout(layout)
-        
-        # 파일 리스트 초기화
-        self.refresh_file_list()
-        
-        # 리스트 선택 이벤트 연결
-        self.file_list.itemSelectionChanged.connect(self.on_selection_changed)
-    
-    def refresh_file_list(self):
-        """파일 리스트를 새로고침"""
-        self.file_list.clear()
-        
-        # JSON 파일 찾기
-        file_names = glob.glob(os.path.abspath("*.json"))
-        file_names_map = [os.path.basename(path) for path in file_names]
-        
-        if not file_names_map:
-            # 파일이 없는 경우
-            no_file_item = QListWidgetItem("JSON 파일이 없습니다.")
-            no_file_item.setFlags(Qt.ItemFlag.NoItemFlags)  # 선택 불가능하게 설정
-            self.file_list.addItem(no_file_item)
-            self.ok_button.setEnabled(False)
-            return
-        
-        # 파일 리스트 추가
-        for file_name in file_names_map:
-            item = QListWidgetItem(file_name)
-#            if "_access_info_" in file_name:
-#                item.setBackground(QColor("#ADD8E6"))
-            self.file_list.addItem(item)
-        
-        # 파일이 하나뿐이면 자동 선택
-        if len(file_names_map) == 1:
-            self.file_list.setCurrentRow(0)
-            self.ok_button.setEnabled(True)
-    
-    def on_selection_changed(self):
-        """선택이 변경되었을 때 호출"""
-        current_item = self.file_list.currentItem()
-        if current_item and current_item.text() != "JSON 파일이 없습니다.":
-            self.ok_button.setEnabled(True)
-        else:
-            self.ok_button.setEnabled(False)
-    
-    def on_file_double_clicked(self, item):
-        """파일을 더블클릭했을 때 호출"""
-        if item.text() != "JSON 파일이 없습니다.":
-            self.selected_file = item.text()
-            self.accept()
-    
-    def accept_selection(self):
-        """확인 버튼을 클릭했을 때 호출"""
-        current_item = self.file_list.currentItem()
-        if current_item and current_item.text() != "JSON 파일이 없습니다.":
-            self.selected_file = current_item.text()
-            self.accept()
-        else:
-            QMessageBox.warning(self, "경고", "파일을 선택해주세요.")
 
 class CLASS_crypto_gen():
     def __init__(self, password = "nono"):    
@@ -214,28 +111,28 @@ class CLASS_crypto_gen():
         today = time.time()
         s_today = str(today)
         b_today = s_today.encode("utf-8")
-        enc_today = self.encrypt_data(b_today, 
-                                    self.json_data["common"].get(ConfigKeys.GENERAL_INFO, ""), 
-                                    self.json_data["common"].get(ConfigKeys.TARG_DA, "0"), 
-                                    self.json_data["common"].get(ConfigKeys.TARG_VA, "0"), 
-                                    self.password)
+        enc_today = self.encrypt_data(b_today, self.json_data["common"].get("general info", ""), self.json_data["common"].get("targ_da", "0"), self.json_data["common"].get("targ_va", "0"), self.password)
         decode_enc_today = enc_today.decode("utf-8")
-        self.json_data["common"][ConfigKeys.ENPREV] = decode_enc_today
+        self.json_data["common"]["enprev"] = decode_enc_today
 
     def decrypt(self):
         try:
-            enco_enc_data = self.json_data["common"].get(ConfigKeys.ENPREV, "None").encode("utf-8")
-            b_today = self.decrypt_data(enco_enc_data, 
-                                      self.json_data["common"].get(ConfigKeys.GENERAL_INFO, ""), 
-                                      self.json_data["common"].get(ConfigKeys.TARG_DA, "0"), 
-                                      self.json_data["common"].get(ConfigKeys.TARG_VA, "0"), 
-                                      self.password)
+            enco_enc_data = self.json_data["common"].get('enprev', "None").encode("utf-8")
+            b_today = self.decrypt_data(enco_enc_data, self.json_data["common"].get('general info', ""), self.json_data["common"].get('targ_da', "0"), self.json_data["common"].get('targ_va', "0"), self.password)
             if b_today is None:
                 self.log_system_info(True, "Fatal error : decrypt error. Exiting program..." , inspect.getframeinfo(inspect.currentframe()).function)
             s_today = b_today.decode("utf-8")
         except:
             self.log_system_info(True, "Fatal error : corrupted file format. Exiting program..." , inspect.getframeinfo(inspect.currentframe()).function)
         return s_today
+
+
+#    def get_data_location(self, filename):
+#        if getattr(sys, 'frozen', False):  #빌드
+#            base_path = sys._MEIPASS
+#        else:
+#            base_path = os.path.abspath(".")  #개발 환경
+#        return os.path.join(base_path, filename)
 
     def get_target_margin(self):
         while True:
@@ -244,8 +141,8 @@ class CLASS_crypto_gen():
                 break
             except ValueError:
                 print("소수점이 포함된 숫자만 가능")
-        self.json_data["common"][ConfigKeys.TARG_DA] = str(target_day * self.time_baseline) 
-        self.json_data["common"][ConfigKeys.TARG_VA] = str(target_day * 0.37 * self.time_baseline)
+        self.json_data["common"]["targ_da"] = str(target_day * self.time_baseline) 
+        self.json_data["common"]["targ_va"] = str(target_day * 0.37 * self.time_baseline)
         return
         while True:
             try:
@@ -416,6 +313,8 @@ if pyQT:
                 self.list_log_widget.addItem(list_data[i])
             self.list_log_widget.setCurrentRow(self.list_log_widget.count() - 1)
             self.list_log_widget.addItem("")            
+#            self.list_log_widget.insertItem(0, message)
+#            self.list_log_widget.setCurrentRow(0)
 
         def get_key_from_user(self, CLASS_arg) -> bool:
             unuseful_key_value = True
@@ -428,6 +327,8 @@ if pyQT:
                     target_day = float(target_day)
                     if ok == True:
                         CLASS_arg.target_day = str(target_day)
+#                        CLASS_arg.json_data["common"]["targ_da"] = str(target_day * CLASS_arg.time_baseline) 
+#                        CLASS_arg.json_data["common"]["targ_va"] = str(target_day * 0.37 * CLASS_arg.time_baseline)
                         return target_day
                     if ok == False:
                         CLASS_arg.target_day = None
@@ -442,8 +343,8 @@ if pyQT:
                             break
                         except ValueError:
                             print("소수점이 포함된 숫자만 가능")
-                    self.json_data["common"][ConfigKeys.TARG_DA] = str(target_day * self.time_baseline) 
-                    self.json_data["common"][ConfigKeys.TARG_VA] = str(target_day * 0.37 * self.time_baseline)
+                    self.json_data["common"]["targ_da"] = str(target_day * self.time_baseline) 
+                    self.json_data["common"]["targ_va"] = str(target_day * 0.37 * self.time_baseline)
                     return
                     while True:
                         try:
@@ -508,18 +409,6 @@ if pyQT:
             if pyQT is False:
                 input(f"아무키나 누르세요.")
 
-        def select_access_info(self, CLASS_arg) -> bool:
-            """ACCESS INFO 파일 선택 다이얼로그를 표시하고 선택된 파일을 설정"""
-            dialog = FileSelectionDialog(self)            
-            if dialog.exec() == QDialog.DialogCode.Accepted:
-                if dialog.selected_file:
-                    CLASS_arg.json_file_name = dialog.selected_file
-                    CLASS_arg.json_file = os.path.abspath(dialog.selected_file)
-                    self.log_log(True, f"선택된 파일: {dialog.selected_file}")
-                    return True
-            return False
-
-
         def verification_process(self, CLASS_arg):
             json_file = Path(os.path.join(Path(os.path.join(os.getcwd())), f'{CLASS_arg.json_file_name}'))
             try:
@@ -533,20 +422,27 @@ if pyQT:
             today_tick = time.time()
             prev_tick = float(CLASS_arg.decrypt())
             prev_day_localtime = time.localtime(prev_tick)
-            target_day_tick = float(CLASS_arg.json_data["common"].get(ConfigKeys.TARG_DA, 0))
+            target_day_tick = float(CLASS_arg.json_data["common"].get("targ_da", 0))
             target_day_localtime = time.localtime(prev_tick + target_day_tick)
-            target_variance_tick = float(CLASS_arg.json_data["common"].get(ConfigKeys.TARG_VA, 0))
+            target_variance_tick = float(CLASS_arg.json_data["common"].get("targ_va", 0))
             random_variance_tick  = target_variance_tick * 2 - target_variance_tick
+        #    random_variance_tick  = (random.random() * float(target_variance_tick) * 2) - float(target_variance_tick)
             day_gap_tick = today_tick - prev_tick - random_variance_tick
-            min_day = time.localtime(prev_tick + float(CLASS_arg.json_data["common"].get(ConfigKeys.TARG_DA, 0)) - random_variance_tick)
-            max_day = time.localtime(prev_tick + float(CLASS_arg.json_data["common"].get(ConfigKeys.TARG_DA, 0)) + random_variance_tick)
+            min_day = time.localtime(prev_tick + float(CLASS_arg.json_data["common"].get("targ_da", 0)) - random_variance_tick)
+            max_day = time.localtime(prev_tick + float(CLASS_arg.json_data["common"].get("targ_da", 0)) + random_variance_tick)
             output_message = f'랜덤 변화량 : {(target_variance_tick/60/60/24):.2f} 일\n'
             output_message = f'{output_message}종료 기준 시간 : {target_day_localtime.tm_year}년 {target_day_localtime.tm_mon}월 {target_day_localtime.tm_mday}일 {target_day_localtime.tm_hour}시 {target_day_localtime.tm_min}분\n'
             output_message = f'{output_message}최소 유효 시간 : {min_day.tm_year}년 {min_day.tm_mon}월 {min_day.tm_mday}일 {min_day.tm_hour}시 {min_day.tm_min}분\n'
             output_message = f'{output_message}최대 유효 시간 : {max_day.tm_year}년 {max_day.tm_mon}월 {max_day.tm_mday}일 {max_day.tm_hour}시 {max_day.tm_min}분\n'
             output_message = f'{output_message}최소 유효 시간과 최대 유효 시간내에서 실행시마다 랜덤 변화량만큼 변화되어 적용됩니다.\n'
             self.log_log(pyQT, output_message)
-            if day_gap_tick > float(CLASS_arg.json_data["common"].get(ConfigKeys.TARG_DA, 0)):
+#            self.log_log(pyQT, f'{CLASS_arg.json_file_name} 의 검증 결과')
+#            self.log_log(pyQT, f'랜덤 변화량 : {(target_variance_tick/60/60/24):.2f} 일')
+#            self.log_log(pyQT, f'종료 기준 시간 : {target_day_localtime.tm_year}년 {target_day_localtime.tm_mon}월 {target_day_localtime.tm_mday}일 {target_day_localtime.tm_hour}시 {target_day_localtime.tm_min}분')
+#            self.log_log(pyQT, f'최소 유효 시간 : {min_day.tm_year}년 {min_day.tm_mon}월 {min_day.tm_mday}일 {min_day.tm_hour}시 {min_day.tm_min}분')
+#            self.log_log(pyQT, f'최대 유효 시간 : {max_day.tm_year}년 {max_day.tm_mon}월 {max_day.tm_mday}일 {max_day.tm_hour}시 {max_day.tm_min}분')
+#            self.log_log(pyQT, f'최소 유효 시간과 최대 유효 시간내에서 실행시마다 랜덤 변화량만큼 변화되어 적용됩니다.')
+            if day_gap_tick > float(CLASS_arg.json_data["common"].get("targ_da", 0)):
                 output_message = f'{output_message}이미 최대 유효 기간이 지났습니다.'
                 self.log_log(pyQT, output_message)
                 if pyQT is False:
@@ -575,10 +471,7 @@ if pyQT:
 
         def but_2(self):
             cls_crypto_gen = CLASS_crypto_gen()
-            if self.select_access_info(cls_crypto_gen):
-                self.verification_process(cls_crypto_gen)
-            else:
-                self.log_log(True, "파일 선택이 취소되었습니다.")
+            self.verification_process(cls_crypto_gen)
 
     app = QApplication(sys.argv)
     cls_MyWindow = MyWindow()  # MyWindow 객체 생성
@@ -610,20 +503,22 @@ else:
         today_tick = time.time()
         prev_tick = float(cls_crypto_gen.decrypt())
         prev_day_localtime = time.localtime(prev_tick)
-        target_day_tick = float(cls_crypto_gen.json_data["common"].get(ConfigKeys.TARG_DA, 0))
+        target_day_tick = float(cls_crypto_gen.json_data["common"].get("targ_da", 0))
         target_day_localtime = time.localtime(prev_tick + target_day_tick)
-        target_variance_tick = float(cls_crypto_gen.json_data["common"].get(ConfigKeys.TARG_VA, 0))
+        target_variance_tick = float(cls_crypto_gen.json_data["common"].get("targ_va", 0))
         random_variance_tick  = target_variance_tick * 2 - target_variance_tick
+    #    random_variance_tick  = (random.random() * float(target_variance_tick) * 2) - float(target_variance_tick)
         day_gap_tick = today_tick - prev_tick - random_variance_tick
-        min_day = time.localtime(prev_tick + float(cls_crypto_gen.json_data["common"].get(ConfigKeys.TARG_DA, 0)) - random_variance_tick)
-        max_day = time.localtime(prev_tick + float(cls_crypto_gen.json_data["common"].get(ConfigKeys.TARG_DA, 0)) + random_variance_tick)
+        min_day = time.localtime(prev_tick + float(cls_crypto_gen.json_data["common"].get("targ_da", 0)) - random_variance_tick)
+        max_day = time.localtime(prev_tick + float(cls_crypto_gen.json_data["common"].get("targ_da", 0)) + random_variance_tick)
         print(f'랜덤 변화량 : {(target_variance_tick/60/60/24):.2f} 일')
         print(f'종료 기준 시간 : {target_day_localtime.tm_year}년 {target_day_localtime.tm_mon}월 {target_day_localtime.tm_mday}일 {target_day_localtime.tm_hour}시 {target_day_localtime.tm_min}분')
         print(f'최소 유효 시간 : {min_day.tm_year}년 {min_day.tm_mon}월 {min_day.tm_mday}일 {min_day.tm_hour}시 {min_day.tm_min}분')
         print(f'최대 유효 시간 : {max_day.tm_year}년 {max_day.tm_mon}월 {max_day.tm_mday}일 {max_day.tm_hour}시 {max_day.tm_min}분')
         print(f'최소 유효 시간과 최대 유효 시간내에서 실행시마다 랜덤 변화량만큼 변화되어 적용됩니다.')
-        if day_gap_tick > float(cls_crypto_gen.json_data["common"].get(ConfigKeys.TARG_DA, 0)):
+        if day_gap_tick > float(cls_crypto_gen.json_data["common"].get("targ_da", 0)):
             input("\n이미 최대 유효 기간이 지났습니다.")
             sys.exit()
         else:
             input("\n아직 최대 유효 기간이 남았습니다.")
+
