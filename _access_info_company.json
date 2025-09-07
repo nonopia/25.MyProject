@@ -1,0 +1,22 @@
+{
+	"basic": {
+		"scan method(local/remote/query)": "",
+		"sudo command('sudo' | else)": "else",
+		"remote host IP": "",
+		"remote host port": "",
+		"remote host root account": "",
+		"remote host root password": "",
+		"database name": "",
+		"database admin name": "",
+		"database password": "",
+		"database port": "",
+		"block name": ""
+	},
+	"common": {
+		"general info": "_2025-05-26_Mat+365.0",
+		"base": "86400",
+		"targ_da": "31536000.0",
+		"targ_va": "11668320.000000002",
+		"enprev": "gAAAAABoNCts7H7DAy6t8vm0ZwrRaZBXT2M46L3nZzfxjA2vAKpn1ihw4l0jmNH-jl2EMEHtRnW1Wd9bAuKCa7J_wiarE3DUBLyOA2EDEMetBBEGp5yooDU="
+	}
+}

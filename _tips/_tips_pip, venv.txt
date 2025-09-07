@@ -1,0 +1,42 @@
+if __name__ == '__main__':
+    print(f'\n\npackage file : {__file__}\nPlease run main program\n\n')
+    sys.exit(-1)
+
+'''
+Basic pips install
+  - apt install python3-pip
+  - python.exe -m pip install --upgrade pip
+
+Linux Virtual Environment Install
+  - sudo apt install python3-venv
+  - python3 -m venv _my_venv
+  - source _my_venv/bin/activate
+ Copy
+  - pip list
+  - pip freeze > req.txt
+  - deactivate
+  - python -m venv new_venv
+  - source new_venv/bin/activate
+  - pip install -r req.txt
+  - pip list
+  - rm req.txt
+  - rm -r old_venv 
+
+Windwows Virtual Environment 
+  - cmd 창에서 수행
+  - python -m venv _my_venv
+  - .\_my_venv\Scripts\activate
+  - 터미널 열때 기본적으로 수행하기 위해
+    * Ctrl + Shift + P → Python: Select Interpreter 입력
+    * 가상 환경의 Python 경로 선택(예: _my_venv\Scripts\python.exe)
+ Copy
+  - pip list
+  - pip freeze > req.txt
+  - deactivate
+  - python -m venv new_venv
+  - .\new_venv\Scripts\activate
+  - pip install -r req.txt
+  - pip list
+  - del req.txt
+  - rmdir old_venv 
+'''

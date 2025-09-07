@@ -1,0 +1,6 @@
+/_igno_.py
+/_my_venv
+/build
+/*.spec
+/snapshots
+/dist
