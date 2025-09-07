@@ -41,6 +41,19 @@ if "--build" in sys.argv:
 
 pyQT = True
 
+class ConfigKeys:
+    SCAN_METHOD = "scan method(local/remote/query)"
+    SUDO_COMMAND = "sudo command('sudo' | else)"
+    REMOTE_HOST_IP = "remote host IP"
+    REMOTE_HOST_PORT = "remote host port"
+    REMOTE_HOST_ROOT_ACCOUNT = "remote host root account"
+    REMOTE_HOST_ROOT_PASSWORD = "remote host root password"
+    DATABASE_NAME = "database name"
+    DATABASE_ADMIN_NAME = "database admin name"
+    DATABASE_PASSWORD = "database password"
+    DATABASE_PORT = "database port"
+    BLOCK_NAME = "block name"
+
 class CLASS_crypto_gen():
     def __init__(self, password = "nono"):    
         self.time_minute = 60
@@ -52,21 +65,20 @@ class CLASS_crypto_gen():
         self.target_day = None
         self.json_file_name = "_access_info_company.json"
         self.json_data = {
-                "basic" : 
-                {
-                    "scan method(local/remote/query)": "",
-                    "sudo command('sudo' | else)": "else",
-                    "remote host IP": "",
-                    "remote host port": "",
-                    "remote host root account" : "", 
-                    "remote host root password" : "", 
-                    "database name" : "",
-                    "database admin name" : "",
-                    "database password" : "",
-                    "database port" : "",
-                    "block name":"",
-                }
+            "basic": {
+                ConfigKeys.SCAN_METHOD: "",
+                ConfigKeys.SUDO_COMMAND: "else",
+                ConfigKeys.REMOTE_HOST_IP: "",
+                ConfigKeys.REMOTE_HOST_PORT: "",
+                ConfigKeys.REMOTE_HOST_ROOT_ACCOUNT: "",
+                ConfigKeys.REMOTE_HOST_ROOT_PASSWORD: "",
+                ConfigKeys.DATABASE_NAME: "",
+                ConfigKeys.DATABASE_ADMIN_NAME: "",
+                ConfigKeys.DATABASE_PASSWORD: "",
+                ConfigKeys.DATABASE_PORT: "",
+                ConfigKeys.BLOCK_NAME: "",
             }
+        }
 
     def make_key_ciper(self, general_info, target_day, target_margin, password): 
         combined_input = general_info.encode("ascii") + target_day.encode("ascii") + target_margin.encode("ascii") + password.encode("ascii")
@@ -358,33 +370,28 @@ if pyQT:
                 is_sudo = "sudo"
             today = date.today()
             future_date = today + timedelta(int(return_value))
-            CLASS_arg.json_data.update( 
-                {
-                    str(self.line_edit_block_name.text().strip()) : 
-                    {
-                        "scan method(local/remote/query)": is_remote,
-                        "sudo command('sudo' | else)": is_sudo,
-                        "remote host IP" : str(self.line_edit_IP.text()).strip(),
-                        "remote host port" : str(self.line_edit_port.text()).strip(),
-                        "remote host root account" : str(self.line_edit_root.text()).strip(),
-                        "remote host root password" : str(self.line_edit_root_password.text()).strip(),
-                        "database name" : str(self.line_edit_db_name.text()).strip(),
-                        "database admin name" : str(self.line_edit_db_admin.text()).strip(),
-                        "database password" : str(self.line_edit_db_admin_password.text()).strip(),
-                        "database port" : str(self.line_edit_db_port.text()).strip(),
-                        "block name": str(self.line_edit_block_name.text()).strip(),
-                    },
-                    "common" : 
-                    {
-                        "general info": str(self.line_edit_general_info.text()).strip() + f"_{today}_Mat+{return_value}",
-                        "base": str(CLASS_arg.time_baseline),
-                        "targ_da": str(float(CLASS_arg.target_day) * float(CLASS_arg.time_baseline)),
-                        "targ_va": str(float(CLASS_arg.target_day) * 0.37 * float(CLASS_arg.time_baseline)),
-                        "enprev": ""
-                    }
+            CLASS_arg.json_data.update({
+                str(self.line_edit_block_name.text().strip()): {
+                    ConfigKeys.SCAN_METHOD: is_remote,
+                    ConfigKeys.SUDO_COMMAND: is_sudo,
+                    ConfigKeys.REMOTE_HOST_IP: str(self.line_edit_IP.text()).strip(),
+                    ConfigKeys.REMOTE_HOST_PORT: str(self.line_edit_port.text()).strip(),
+                    ConfigKeys.REMOTE_HOST_ROOT_ACCOUNT: str(self.line_edit_root.text()).strip(),
+                    ConfigKeys.REMOTE_HOST_ROOT_PASSWORD: str(self.line_edit_root_password.text()).strip(),
+                    ConfigKeys.DATABASE_NAME: str(self.line_edit_db_name.text()).strip(),
+                    ConfigKeys.DATABASE_ADMIN_NAME: str(self.line_edit_db_admin.text()).strip(),
+                    ConfigKeys.DATABASE_PASSWORD: str(self.line_edit_db_admin_password.text()).strip(),
+                    ConfigKeys.DATABASE_PORT: str(self.line_edit_db_port.text()).strip(),
+                    ConfigKeys.BLOCK_NAME: str(self.line_edit_block_name.text()).strip(),
+                },
+                "common": {
+                    "general info": str(self.line_edit_general_info.text()).strip() + f"_{today}_Mat+{return_value}",
+                    "base": str(CLASS_arg.time_baseline),
+                    "targ_da": str(float(CLASS_arg.target_day) * float(CLASS_arg.time_baseline)),
+                    "targ_va": str(float(CLASS_arg.target_day) * 0.37 * float(CLASS_arg.time_baseline)),
+                    "enprev": ""
                 }
-            )
-
+            })
             CLASS_arg.encrypt()
             json_format = json.dumps(CLASS_arg.json_data, indent="\t", ensure_ascii=False)
             with open(f'{CLASS_arg.json_file_name}', "w", encoding="utf-8") as f:
